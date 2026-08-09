@@ -31,7 +31,6 @@
       align-items: center;
     }
 
-    /* Screen Containers */
     .screen {
       display: none;
       width: 100%;
@@ -46,13 +45,12 @@
       display: flex;
     }
 
-    /* Intro Screen & Cards */
     .card {
       background: #111111;
       border: 1px solid #222222;
       border-radius: 12px;
       padding: 32px;
-      max-width: 580px;
+      max-width: 620px;
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -82,12 +80,37 @@
       margin-left: 20px;
     }
 
-    /* Config Controls Form */
+    .file-load-box {
+      background: #161616;
+      border: 1px dashed #333333;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .file-load-box label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #888888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .file-status {
+      font-size: 0.9rem;
+      color: var(--success-color);
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
     .config-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       text-align: left;
     }
 
@@ -105,19 +128,15 @@
       letter-spacing: 0.5px;
     }
 
-    .field input {
+    .field input[type="number"], .file-load-box input[type="file"] {
       background: #181818;
       border: 1px solid #333333;
       border-radius: 6px;
       padding: 10px 12px;
       color: #ffffff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .field input:focus {
-      border-color: var(--accent-color);
+      width: 100%;
     }
 
     .btn {
@@ -133,29 +152,36 @@
       transition: background-color 0.2s, transform 0.1s;
     }
 
+    .btn-secondary {
+      background-color: #333333;
+    }
+
+    .btn-secondary:hover {
+      background-color: #444444;
+    }
+
     .btn:hover {
       background-color: #357abd;
     }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    /* Testing Canvas Screen */
     #test-screen {
       position: relative;
       padding: 0;
       overflow: hidden;
+      background-color: #000000;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     canvas {
       image-rendering: pixelated;
       image-rendering: crisp-edges;
       background-color: #000000;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
     }
 
-    /* Results Screen */
     #results-screen {
       overflow-y: auto;
       justify-content: flex-start;
@@ -163,7 +189,7 @@
     }
 
     .results-container {
-      max-width: 800px;
+      max-width: 900px;
       width: 100%;
       background: #111111;
       border-radius: 12px;
@@ -173,7 +199,7 @@
 
     .score-summary {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
 
     .score-big {
@@ -183,20 +209,49 @@
       margin: 8px 0;
     }
 
-    .results-grid-layout {
+    .session-picker {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .session-picker select {
+      background: #181818;
+      color: #fff;
+      border: 1px solid #333;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .maps-grid-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
       margin-bottom: 32px;
     }
 
-    @media (max-width: 700px) {
-      .results-grid-layout {
+    @media (max-width: 750px) {
+      .maps-grid-layout, .config-group {
         grid-template-columns: 1fr;
       }
-      .config-group {
-        grid-template-columns: 1fr;
-      }
+    }
+
+    .map-card {
+      background: #161616;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .map-card canvas {
+      width: 100%;
+      aspect-ratio: 1;
+      margin-top: 12px;
+      border-radius: 4px;
     }
 
     .section-title {
@@ -207,12 +262,12 @@
       padding-bottom: 6px;
     }
 
-    /* Table for Brightness Breakdown */
     .table-wrapper {
-      max-height: 320px;
+      max-height: 280px;
       overflow-y: auto;
       border: 1px solid #222222;
       border-radius: 6px;
+      margin-bottom: 24px;
     }
 
     table {
@@ -244,35 +299,29 @@
       font-weight: bold;
     }
 
-    /* Map Visualization */
-    #spatial-map {
-      width: 100%;
-      aspect-ratio: 1;
-      background: #000;
-      border-radius: 6px;
-      border: 1px solid #222222;
-    }
-
     .actions {
-      text-align: center;
-      margin-top: 24px;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. INTRO SCREEN -->
+  <!-- 1. START / CONFIG SCREEN -->
   <div id="intro-screen" class="screen active">
     <div class="card">
       <h1>Visual Field & Contrast Sensitivity Tester</h1>
-      <p>This test evaluates your ability to detect faint visual flashes across your field of view.</p>
+      <p>Load your previous history file or start a new examination record.</p>
       
-      <ul class="instructions-list">
-        <li>Maintain your gaze on the <strong>center dim red dot</strong> at all times.</li>
-        <li>Press the <strong>SPACEBAR</strong> within 1 second whenever you see a flash.</li>
-        <li>Adjust the test parameters below if desired.</li>
-      </ul>
+      <!-- Open File First -->
+      <div class="file-load-box">
+        <label for="history-file-input">1. Open Existing Examination File (Optional)</label>
+        <input type="file" id="history-file-input" accept=".json">
+        <div id="file-status" class="file-status">Starting a new history file.</div>
+      </div>
 
+      <!-- Test Parameters -->
       <div class="config-group">
         <div class="field">
           <label for="flash-count-input">Number of Flashes</label>
@@ -297,58 +346,67 @@
   <div id="results-screen" class="screen">
     <div class="results-container">
       <div class="score-summary">
-        <h1>Test Complete</h1>
+        <h1>Examination Complete</h1>
         <div id="final-score" class="score-big">0%</div>
         <p id="score-text">0 out of 100 flashes detected</p>
       </div>
 
-      <div class="results-grid-layout">
-        <!-- Spatial Hit Map -->
-        <div>
-          <div class="section-title">Spatial Map (Green = Seen, Red = Missed)</div>
+      <!-- Session Picker -->
+      <div class="session-picker">
+        <label for="session-select">Select Session to View:</label>
+        <select id="session-select"></select>
+      </div>
+
+      <!-- Charts -->
+      <div class="maps-grid-layout">
+        <div class="map-card">
+          <div class="section-title">Discrete Hit Map</div>
           <canvas id="spatial-map" width="100" height="100"></canvas>
         </div>
-
-        <!-- Brightness Table -->
-        <div>
-          <div class="section-title">Brightness Level Breakdown</div>
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Trial</th>
-                  <th>Brightness</th>
-                  <th>Position (X, Y)</th>
-                  <th>Result</th>
-                  <th>Response Time</th>
-                </tr>
-              </thead>
-              <tbody id="results-table-body">
-                <!-- Dynamically filled -->
-              </tbody>
-            </table>
-          </div>
+        <div class="map-card">
+          <div class="section-title">Extrapolated Field Map</div>
+          <canvas id="extrapolated-map" width="100" height="100"></canvas>
         </div>
       </div>
 
+      <!-- Table Breakdown -->
+      <div class="section-title">Brightness Level Breakdown</div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Trial</th>
+              <th>Brightness</th>
+              <th>Position (X, Y)</th>
+              <th>Result</th>
+              <th>Response Time</th>
+            </tr>
+          </thead>
+          <tbody id="results-table-body"></tbody>
+        </table>
+      </div>
+
       <div class="actions">
-        <button id="restart-btn" class="btn">Take Test Again</button>
+        <button id="export-btn" class="btn btn-secondary">Update & Export Results File</button>
+        <button id="restart-btn" class="btn">Take Another Test</button>
       </div>
     </div>
   </div>
 
   <script>
-    // --- APP STATE & CONSTANTS ---
+    // --- CONSTANTS & STATE ---
     const GRID_SIZE = 100;
-    const FLASH_DURATION = 500;   // ms (0.5 seconds)
-    const RESPONSE_WINDOW = 1000; // ms (1.0 second)
-    const MIN_ISI = 1000;         // Inter-stimulus interval min delay (ms)
-    const MAX_ISI = 2000;         // Inter-stimulus interval max delay (ms)
+    const FLASH_DURATION = 500;   // 0.5s
+    const RESPONSE_WINDOW = 1000; // 1.0s
+    const MIN_ISI = 1000;
+    const MAX_ISI = 2000;
 
-    let totalFlashes = 100;
-    let maxBrightness = 25;
+    let historyData = {
+      version: "4.0",
+      sessions: []
+    };
 
-    let trials = [];
+    let activeSession = null;
     let currentTrialIndex = 0;
     let isTesting = false;
     let trialActive = false;
@@ -363,9 +421,13 @@
 
     const flashCountInput = document.getElementById('flash-count-input');
     const maxBrightnessInput = document.getElementById('max-brightness-input');
+    const historyFileInput = document.getElementById('history-file-input');
+    const fileStatusEl = document.getElementById('file-status');
 
+    const sessionSelect = document.getElementById('session-select');
     const startBtn = document.getElementById('start-btn');
     const restartBtn = document.getElementById('restart-btn');
+    const exportBtn = document.getElementById('export-btn');
 
     const canvas = document.getElementById('view-canvas');
     const ctx = canvas.getContext('2d');
@@ -373,44 +435,89 @@
     const spatialMapCanvas = document.getElementById('spatial-map');
     const spatialCtx = spatialMapCanvas.getContext('2d');
 
+    const extrapolatedMapCanvas = document.getElementById('extrapolated-map');
+    const extrapolatedCtx = extrapolatedMapCanvas.getContext('2d');
+
     const finalScoreEl = document.getElementById('final-score');
     const scoreTextEl = document.getElementById('score-text');
     const resultsTableBody = document.getElementById('results-table-body');
 
-    // --- INITIALIZATION & CANVAS RESIZING ---
-    function resizeCanvas() {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const size = Math.min(windowWidth, windowHeight);
+    // --- FULLSCREEN HELPERS ---
+    function requestFullScreenMode() {
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(() => {});
+      } else if (docEl.mozRequestFullScreen) { /* Firefox */
+        docEl.mozRequestFullScreen();
+      } else if (docEl.webkitRequestFullscreen) { /* Chrome, Safari, Opera */
+        docEl.webkitRequestFullscreen();
+      } else if (docEl.msRequestFullscreen) { /* IE/Edge */
+        docEl.msRequestFullscreen();
+      }
+    }
 
+    function exitFullScreenMode() {
+      if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    // --- RESIZE CANVAS ---
+    function resizeCanvas() {
+      const size = Math.min(window.innerWidth, window.innerHeight);
       canvas.style.width = `${size}px`;
       canvas.style.height = `${size}px`;
     }
-
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // --- PRE-COMPUTATION (FISHER-YATES SHUFFLE) ---
-    function initializeTrials() {
-      // Parse configuration inputs
-      totalFlashes = Math.max(1, parseInt(flashCountInput.value, 10) || 100);
-      maxBrightness = Math.min(100, Math.max(1, parseInt(maxBrightnessInput.value, 10) || 25));
+    // --- FILE IMPORT ---
+    historyFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-      trials = [];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed.sessions && Array.isArray(parsed.sessions)) {
+            historyData = parsed;
+            fileStatusEl.textContent = `✓ Loaded "${file.name}" (${historyData.sessions.length} past session(s) found).`;
+          } else {
+            alert('Invalid JSON structure for results file.');
+          }
+        } catch (err) {
+          alert('Could not parse selected JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // --- PRE-COMPUTATION ---
+    function createNewSession() {
+      const totalFlashes = Math.max(1, parseInt(flashCountInput.value, 10) || 100);
+      const maxBrightness = Math.min(100, Math.max(1, parseInt(maxBrightnessInput.value, 10) || 25));
+
       const brightnesses = [];
-
-      // Evenly map sequence across 1% to maxBrightness%
       for (let i = 0; i < totalFlashes; i++) {
         const percent = 1 + (i * (maxBrightness - 1)) / Math.max(1, totalFlashes - 1);
         brightnesses.push(Math.round(percent));
       }
 
-      // Fisher-Yates Shuffle
       for (let i = brightnesses.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [brightnesses[i], brightnesses[j]] = [brightnesses[j], brightnesses[i]];
       }
 
+      const trials = [];
       for (let i = 0; i < totalFlashes; i++) {
         trials.push({
           trialIndex: i + 1,
@@ -423,30 +530,37 @@
           responseTimeMs: null
         });
       }
+
+      activeSession = {
+        sessionId: `session_${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        config: { totalFlashes, maxBrightness },
+        summary: { totalSeen: 0, scorePercent: 0 },
+        trials
+      };
     }
 
-    // --- RENDER FUNCTIONS ---
+    // --- RENDER ENGINE ---
     function clearCanvas() {
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
 
-      // Fixation Point: Center (50, 50), Color: 25% Red -> rgb(64, 0, 0)
+      // Fixation point center (50, 50) - 25% Red
       ctx.fillStyle = 'rgb(64, 0, 0)';
       ctx.fillRect(50, 50, 1, 1);
     }
 
     function drawFlash(x, y, brightnessPercent) {
       clearCanvas();
-      
-      // Map 1-100% to 0-255 RGB grayscale
-      const value = Math.round((brightnessPercent / 100) * 255);
-      ctx.fillStyle = `rgb(${value}, ${value}, ${value})`;
+      const val = Math.round((brightnessPercent / 100) * 255);
+      ctx.fillStyle = `rgb(${val}, ${val}, ${val})`;
       ctx.fillRect(x, y, 1, 1);
     }
 
-    // --- TEST EXECUTION ENGINE ---
+    // --- TEST EXECUTION LOOP ---
     function startTest() {
-      initializeTrials();
+      requestFullScreenMode();
+      createNewSession();
       currentTrialIndex = 0;
       isTesting = true;
 
@@ -454,12 +568,13 @@
       resultsScreen.classList.remove('active');
       testScreen.classList.add('active');
 
+      resizeCanvas();
       clearCanvas();
       scheduleNextTrial();
     }
 
     function scheduleNextTrial() {
-      if (currentTrialIndex >= totalFlashes) {
+      if (currentTrialIndex >= activeSession.config.totalFlashes) {
         endTest();
         return;
       }
@@ -467,11 +582,10 @@
       clearCanvas();
       trialActive = false;
 
-      // Random delay before showing the flash
       const isi = Math.floor(Math.random() * (MAX_ISI - MIN_ISI + 1)) + MIN_ISI;
       setTimeout(() => {
         if (isTesting) {
-          runTrial(trials[currentTrialIndex]);
+          runTrial(activeSession.trials[currentTrialIndex]);
         }
       }, isi);
     }
@@ -481,19 +595,15 @@
       spacePressedForTrial = false;
       currentFlashStartTime = performance.now();
 
-      // Render flash
       drawFlash(trial.position.x, trial.position.y, trial.brightness);
 
-      // Loop to manage flash off-timing and response window cutoff
       function checkTiming(now) {
         const elapsed = now - currentFlashStartTime;
 
-        // Turn off flash after 500ms
         if (elapsed >= FLASH_DURATION && elapsed < RESPONSE_WINDOW) {
           clearCanvas();
         }
 
-        // Close trial response window after 1000ms
         if (elapsed >= RESPONSE_WINDOW) {
           clearCanvas();
           trialActive = false;
@@ -507,19 +617,15 @@
       animationFrameId = requestAnimationFrame(checkTiming);
     }
 
-    // --- KEYBOARD EVENT HANDLING ---
+    // KEYPRESS LISTENERS
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
-        // Prevent default spacebar scrolling
         e.preventDefault();
-
         if (isTesting && trialActive && !spacePressedForTrial) {
-          const now = performance.now();
-          const elapsed = now - currentFlashStartTime;
-
+          const elapsed = performance.now() - currentFlashStartTime;
           if (elapsed <= RESPONSE_WINDOW) {
             spacePressedForTrial = true;
-            const currentTrial = trials[currentTrialIndex];
+            const currentTrial = activeSession.trials[currentTrialIndex];
             currentTrial.seen = true;
             currentTrial.responseTimeMs = Math.round(elapsed);
           }
@@ -527,81 +633,162 @@
       }
     });
 
-    // --- RESULTS PROCESSING ---
+    // --- END TEST & APPEND SESSION ---
     function endTest() {
       isTesting = false;
       trialActive = false;
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
+      exitFullScreenMode();
+
+      const seenCount = activeSession.trials.reduce((acc, t) => acc + (t.seen ? 1 : 0), 0);
+      activeSession.summary.totalSeen = seenCount;
+      activeSession.summary.scorePercent = Math.round((seenCount / activeSession.config.totalFlashes) * 100);
+
+      historyData.sessions.push(activeSession);
+
       testScreen.classList.remove('active');
       resultsScreen.classList.add('active');
 
-      // Calculate score
-      const seenCount = trials.reduce((acc, t) => acc + (t.seen ? 1 : 0), 0);
-      const scorePercent = Math.round((seenCount / totalFlashes) * 100);
-
-      finalScoreEl.textContent = `${scorePercent}%`;
-      scoreTextEl.textContent = `${seenCount} out of ${totalFlashes} flashes detected (Max Brightness: ${maxBrightness}%)`;
-
-      renderSpatialMap();
-      renderResultsTable();
+      populateSessionPicker();
+      displaySessionResults(activeSession);
     }
 
-    function renderSpatialMap() {
+    function populateSessionPicker() {
+      sessionSelect.innerHTML = '';
+      historyData.sessions.forEach((s, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const dateStr = new Date(s.timestamp).toLocaleString();
+        opt.textContent = `Session ${idx + 1}: ${dateStr} (${s.summary.scorePercent}%)`;
+        sessionSelect.appendChild(opt);
+      });
+
+      sessionSelect.value = historyData.sessions.length - 1;
+    }
+
+    sessionSelect.addEventListener('change', (e) => {
+      const selectedSession = historyData.sessions[e.target.value];
+      displaySessionResults(selectedSession);
+    });
+
+    function displaySessionResults(session) {
+      finalScoreEl.textContent = `${session.summary.scorePercent}%`;
+      scoreTextEl.textContent = `${session.summary.totalSeen} out of ${session.config.totalFlashes} flashes detected (Max Brightness: ${session.config.maxBrightness}%)`;
+
+      renderDiscreteMap(session);
+      renderExtrapolatedMap(session);
+      renderResultsTable(session);
+    }
+
+    function renderDiscreteMap(session) {
       spatialCtx.fillStyle = '#000000';
       spatialCtx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
 
-      // Draw red/green hits and misses
-      trials.forEach(trial => {
+      session.trials.forEach(trial => {
         spatialCtx.fillStyle = trial.seen ? '#2ecc71' : '#e74c3c';
         spatialCtx.fillRect(trial.position.x, trial.position.y, 1, 1);
       });
 
-      // Draw red fixation center dot
       spatialCtx.fillStyle = 'rgb(64, 0, 0)';
       spatialCtx.fillRect(50, 50, 1, 1);
     }
 
-    function renderResultsTable() {
+    // --- IDW EXTRAPOLATION HEATMAP ---
+    function renderExtrapolatedMap(session) {
+      const imgData = extrapolatedCtx.createImageData(GRID_SIZE, GRID_SIZE);
+      const data = imgData.data;
+
+      const testedPoints = session.trials.map(t => ({
+        x: t.position.x,
+        y: t.position.y,
+        val: t.seen ? 1 : 0
+      }));
+
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          let num = 0;
+          let den = 0;
+          let exactMatch = null;
+
+          for (let i = 0; i < testedPoints.length; i++) {
+            const pt = testedPoints[i];
+            const distSq = (x - pt.x) ** 2 + (y - pt.y) ** 2;
+
+            if (distSq === 0) {
+              exactMatch = pt.val;
+              break;
+            }
+
+            const w = 1 / distSq;
+            num += w * pt.val;
+            den += w;
+          }
+
+          const sensitivity = exactMatch !== null ? exactMatch : (den > 0 ? num / den : 0);
+          const pixelIndex = (y * GRID_SIZE + x) * 4;
+
+          let r = 0, g = 0, b = 0;
+          if (sensitivity <= 0.5) {
+            r = 231;
+            g = Math.round(76 + (124 * (sensitivity * 2)));
+            b = 60;
+          } else {
+            r = Math.round(231 - (185 * ((sensitivity - 0.5) * 2)));
+            g = 204;
+            b = Math.round(60 + (53 * ((sensitivity - 0.5) * 2)));
+          }
+
+          data[pixelIndex] = r;
+          data[pixelIndex + 1] = g;
+          data[pixelIndex + 2] = b;
+          data[pixelIndex + 3] = 255;
+        }
+      }
+
+      extrapolatedCtx.putImageData(imgData, 0, 0);
+
+      // Red Fixation Point
+      extrapolatedCtx.fillStyle = 'rgb(64, 0, 0)';
+      extrapolatedCtx.fillRect(50, 50, 1, 1);
+    }
+
+    function renderResultsTable(session) {
       resultsTableBody.innerHTML = '';
+      const sorted = [...session.trials].sort((a, b) => a.brightness - b.brightness);
 
-      // Sort by brightness for clear analysis
-      const sortedTrials = [...trials].sort((a, b) => a.brightness - b.brightness);
-
-      sortedTrials.forEach(t => {
+      sorted.forEach(t => {
         const row = document.createElement('tr');
-
-        const indexTd = document.createElement('td');
-        indexTd.textContent = `#${t.trialIndex}`;
-        
-        const brightnessTd = document.createElement('td');
-        brightnessTd.textContent = `${t.brightness}%`;
-
-        const posTd = document.createElement('td');
-        posTd.textContent = `(${t.position.x}, ${t.position.y})`;
-
-        const resultTd = document.createElement('td');
-        resultTd.textContent = t.seen ? 'Seen' : 'Missed';
-        resultTd.className = t.seen ? 'status-seen' : 'status-missed';
-
-        const timeTd = document.createElement('td');
-        timeTd.textContent = t.seen ? `${t.responseTimeMs} ms` : '-';
-
-        row.appendChild(indexTd);
-        row.appendChild(brightnessTd);
-        row.appendChild(posTd);
-        row.appendChild(resultTd);
-        row.appendChild(timeTd);
-
+        row.innerHTML = `
+          <td>#${t.trialIndex}</td>
+          <td>${t.brightness}%</td>
+          <td>(${t.position.x}, ${t.position.y})</td>
+          <td class="${t.seen ? 'status-seen' : 'status-missed'}">${t.seen ? 'Seen' : 'Missed'}</td>
+          <td>${t.seen ? t.responseTimeMs + ' ms' : '-'}</td>
+        `;
         resultsTableBody.appendChild(row);
       });
     }
 
-    // --- BUTTON EVENT LISTENERS ---
+    // --- FILE EXPORT ---
+    exportBtn.addEventListener('click', () => {
+      const jsonStr = JSON.stringify(historyData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `visual_field_history_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // --- NAVIGATION ---
     startBtn.addEventListener('click', startTest);
     restartBtn.addEventListener('click', () => {
       resultsScreen.classList.remove('active');
       introScreen.classList.add('active');
+      fileStatusEl.textContent = `Current session history contains ${historyData.sessions.length} session(s).`;
     });
   </script>
 </body>
