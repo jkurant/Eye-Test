@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Field & Contrast Sensitivity Tester</title>
+  <style>
+    :root {
+      --bg-color: #000000;
+      --text-color: #e0e0e0;
+      --accent-color: #4a90e2;
+      --success-color: #2ecc71;
+      --danger-color: #e74c3c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Screen Containers */
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* Intro Screen & Cards */
+    .card {
+      background: #111111;
+      border: 1px solid #222222;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 580px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+      color: #ffffff;
+    }
+
+    p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #aaaaaa;
+      margin-bottom: 20px;
+    }
+
+    .instructions-list {
+      text-align: left;
+      margin-bottom: 24px;
+      color: #cccccc;
+    }
+
+    .instructions-list li {
+      margin-bottom: 8px;
+      margin-left: 20px;
+    }
+
+    /* Config Controls Form */
+    .config-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #888888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field input {
+      background: #181818;
+      border: 1px solid #333333;
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: #ffffff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus {
+      border-color: var(--accent-color);
+    }
+
+    .btn {
+      background-color: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background-color: #357abd;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Testing Canvas Screen */
+    #test-screen {
+      position: relative;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background-color: #000000;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+    }
+
+    /* Results Screen */
+    #results-screen {
+      overflow-y: auto;
+      justify-content: flex-start;
+      padding: 40px 20px;
+    }
+
+    .results-container {
+      max-width: 800px;
+      width: 100%;
+      background: #111111;
+      border-radius: 12px;
+      padding: 32px;
+      border: 1px solid #222222;
+    }
+
+    .score-summary {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .score-big {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 8px 0;
+    }
+
+    .results-grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 700px) {
+      .results-grid-layout {
+        grid-template-columns: 1fr;
+      }
+      .config-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      color: #ffffff;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #222222;
+      padding-bottom: 6px;
+    }
+
+    /* Table for Brightness Breakdown */
+    .table-wrapper {
+      max-height: 320px;
+      overflow-y: auto;
+      border: 1px solid #222222;
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    th {
+      background-color: #181818;
+      color: #888888;
+      position: sticky;
+      top: 0;
+    }
+
+    .status-seen {
+      color: var(--success-color);
+      font-weight: bold;
+    }
+
+    .status-missed {
+      color: var(--danger-color);
+      font-weight: bold;
+    }
+
+    /* Map Visualization */
+    #spatial-map {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #000;
+      border-radius: 6px;
+      border: 1px solid #222222;
+    }
+
+    .actions {
+      text-align: center;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. INTRO SCREEN -->
+  <div id="intro-screen" class="screen active">
+    <div class="card">
+      <h1>Visual Field & Contrast Sensitivity Tester</h1>
+      <p>This test evaluates your ability to detect faint visual flashes across your field of view.</p>
+      
+      <ul class="instructions-list">
+        <li>Maintain your gaze on the <strong>center dim red dot</strong> at all times.</li>
+        <li>Press the <strong>SPACEBAR</strong> within 1 second whenever you see a flash.</li>
+        <li>Adjust the test parameters below if desired.</li>
+      </ul>
+
+      <div class="config-group">
+        <div class="field">
+          <label for="flash-count-input">Number of Flashes</label>
+          <input type="number" id="flash-count-input" value="100" min="1" max="1000">
+        </div>
+        <div class="field">
+          <label for="max-brightness-input">Max Brightness (%)</label>
+          <input type="number" id="max-brightness-input" value="25" min="1" max="100">
+        </div>
+      </div>
+
+      <button id="start-btn" class="btn">Begin Test</button>
+    </div>
+  </div>
+
+  <!-- 2. TEST SCREEN -->
+  <div id="test-screen" class="screen">
+    <canvas id="view-canvas" width="100" height="100"></canvas>
+  </div>
+
+  <!-- 3. RESULTS SCREEN -->
+  <div id="results-screen" class="screen">
+    <div class="results-container">
+      <div class="score-summary">
+        <h1>Test Complete</h1>
+        <div id="final-score" class="score-big">0%</div>
+        <p id="score-text">0 out of 100 flashes detected</p>
+      </div>
+
+      <div class="results-grid-layout">
+        <!-- Spatial Hit Map -->
+        <div>
+          <div class="section-title">Spatial Map (Green = Seen, Red = Missed)</div>
+          <canvas id="spatial-map" width="100" height="100"></canvas>
+        </div>
+
+        <!-- Brightness Table -->
+        <div>
+          <div class="section-title">Brightness Level Breakdown</div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Trial</th>
+                  <th>Brightness</th>
+                  <th>Position (X, Y)</th>
+                  <th>Result</th>
+                  <th>Response Time</th>
+                </tr>
+              </thead>
+              <tbody id="results-table-body">
+                <!-- Dynamically filled -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="restart-btn" class="btn">Take Test Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- APP STATE & CONSTANTS ---
+    const GRID_SIZE = 100;
+    const FLASH_DURATION = 500;   // ms (0.5 seconds)
+    const RESPONSE_WINDOW = 1000; // ms (1.0 second)
+    const MIN_ISI = 1000;         // Inter-stimulus interval min delay (ms)
+    const MAX_ISI = 2000;         // Inter-stimulus interval max delay (ms)
+
+    let totalFlashes = 100;
+    let maxBrightness = 25;
+
+    let trials = [];
+    let currentTrialIndex = 0;
+    let isTesting = false;
+    let trialActive = false;
+    let currentFlashStartTime = 0;
+    let spacePressedForTrial = false;
+    let animationFrameId = null;
+
+    // --- DOM ELEMENTS ---
+    const introScreen = document.getElementById('intro-screen');
+    const testScreen = document.getElementById('test-screen');
+    const resultsScreen = document.getElementById('results-screen');
+
+    const flashCountInput = document.getElementById('flash-count-input');
+    const maxBrightnessInput = document.getElementById('max-brightness-input');
+
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    const canvas = document.getElementById('view-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const spatialMapCanvas = document.getElementById('spatial-map');
+    const spatialCtx = spatialMapCanvas.getContext('2d');
+
+    const finalScoreEl = document.getElementById('final-score');
+    const scoreTextEl = document.getElementById('score-text');
+    const resultsTableBody = document.getElementById('results-table-body');
+
+    // --- INITIALIZATION & CANVAS RESIZING ---
+    function resizeCanvas() {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const size = Math.min(windowWidth, windowHeight);
+
+      canvas.style.width = `${size}px`;
+      canvas.style.height = `${size}px`;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // --- PRE-COMPUTATION (FISHER-YATES SHUFFLE) ---
+    function initializeTrials() {
+      // Parse configuration inputs
+      totalFlashes = Math.max(1, parseInt(flashCountInput.value, 10) || 100);
+      maxBrightness = Math.min(100, Math.max(1, parseInt(maxBrightnessInput.value, 10) || 25));
+
+      trials = [];
+      const brightnesses = [];
+
+      // Evenly map sequence across 1% to maxBrightness%
+      for (let i = 0; i < totalFlashes; i++) {
+        const percent = 1 + (i * (maxBrightness - 1)) / Math.max(1, totalFlashes - 1);
+        brightnesses.push(Math.round(percent));
+      }
+
+      // Fisher-Yates Shuffle
+      for (let i = brightnesses.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [brightnesses[i], brightnesses[j]] = [brightnesses[j], brightnesses[i]];
+      }
+
+      for (let i = 0; i < totalFlashes; i++) {
+        trials.push({
+          trialIndex: i + 1,
+          brightness: brightnesses[i],
+          position: {
+            x: Math.floor(Math.random() * GRID_SIZE),
+            y: Math.floor(Math.random() * GRID_SIZE)
+          },
+          seen: false,
+          responseTimeMs: null
+        });
+      }
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function clearCanvas() {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
+
+      // Fixation Point: Center (50, 50), Color: 25% Red -> rgb(64, 0, 0)
+      ctx.fillStyle = 'rgb(64, 0, 0)';
+      ctx.fillRect(50, 50, 1, 1);
+    }
+
+    function drawFlash(x, y, brightnessPercent) {
+      clearCanvas();
+      
+      // Map 1-100% to 0-255 RGB grayscale
+      const value = Math.round((brightnessPercent / 100) * 255);
+      ctx.fillStyle = `rgb(${value}, ${value}, ${value})`;
+      ctx.fillRect(x, y, 1, 1);
+    }
+
+    // --- TEST EXECUTION ENGINE ---
+    function startTest() {
+      initializeTrials();
+      currentTrialIndex = 0;
+      isTesting = true;
+
+      introScreen.classList.remove('active');
+      resultsScreen.classList.remove('active');
+      testScreen.classList.add('active');
+
+      clearCanvas();
+      scheduleNextTrial();
+    }
+
+    function scheduleNextTrial() {
+      if (currentTrialIndex >= totalFlashes) {
+        endTest();
+        return;
+      }
+
+      clearCanvas();
+      trialActive = false;
+
+      // Random delay before showing the flash
+      const isi = Math.floor(Math.random() * (MAX_ISI - MIN_ISI + 1)) + MIN_ISI;
+      setTimeout(() => {
+        if (isTesting) {
+          runTrial(trials[currentTrialIndex]);
+        }
+      }, isi);
+    }
+
+    function runTrial(trial) {
+      trialActive = true;
+      spacePressedForTrial = false;
+      currentFlashStartTime = performance.now();
+
+      // Render flash
+      drawFlash(trial.position.x, trial.position.y, trial.brightness);
+
+      // Loop to manage flash off-timing and response window cutoff
+      function checkTiming(now) {
+        const elapsed = now - currentFlashStartTime;
+
+        // Turn off flash after 500ms
+        if (elapsed >= FLASH_DURATION && elapsed < RESPONSE_WINDOW) {
+          clearCanvas();
+        }
+
+        // Close trial response window after 1000ms
+        if (elapsed >= RESPONSE_WINDOW) {
+          clearCanvas();
+          trialActive = false;
+          currentTrialIndex++;
+          scheduleNextTrial();
+        } else {
+          animationFrameId = requestAnimationFrame(checkTiming);
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(checkTiming);
+    }
+
+    // --- KEYBOARD EVENT HANDLING ---
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        // Prevent default spacebar scrolling
+        e.preventDefault();
+
+        if (isTesting && trialActive && !spacePressedForTrial) {
+          const now = performance.now();
+          const elapsed = now - currentFlashStartTime;
+
+          if (elapsed <= RESPONSE_WINDOW) {
+            spacePressedForTrial = true;
+            const currentTrial = trials[currentTrialIndex];
+            currentTrial.seen = true;
+            currentTrial.responseTimeMs = Math.round(elapsed);
+          }
+        }
+      }
+    });
+
+    // --- RESULTS PROCESSING ---
+    function endTest() {
+      isTesting = false;
+      trialActive = false;
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+      testScreen.classList.remove('active');
+      resultsScreen.classList.add('active');
+
+      // Calculate score
+      const seenCount = trials.reduce((acc, t) => acc + (t.seen ? 1 : 0), 0);
+      const scorePercent = Math.round((seenCount / totalFlashes) * 100);
+
+      finalScoreEl.textContent = `${scorePercent}%`;
+      scoreTextEl.textContent = `${seenCount} out of ${totalFlashes} flashes detected (Max Brightness: ${maxBrightness}%)`;
+
+      renderSpatialMap();
+      renderResultsTable();
+    }
+
+    function renderSpatialMap() {
+      spatialCtx.fillStyle = '#000000';
+      spatialCtx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
+
+      // Draw red/green hits and misses
+      trials.forEach(trial => {
+        spatialCtx.fillStyle = trial.seen ? '#2ecc71' : '#e74c3c';
+        spatialCtx.fillRect(trial.position.x, trial.position.y, 1, 1);
+      });
+
+      // Draw red fixation center dot
+      spatialCtx.fillStyle = 'rgb(64, 0, 0)';
+      spatialCtx.fillRect(50, 50, 1, 1);
+    }
+
+    function renderResultsTable() {
+      resultsTableBody.innerHTML = '';
+
+      // Sort by brightness for clear analysis
+      const sortedTrials = [...trials].sort((a, b) => a.brightness - b.brightness);
+
+      sortedTrials.forEach(t => {
+        const row = document.createElement('tr');
+
+        const indexTd = document.createElement('td');
+        indexTd.textContent = `#${t.trialIndex}`;
+        
+        const brightnessTd = document.createElement('td');
+        brightnessTd.textContent = `${t.brightness}%`;
+
+        const posTd = document.createElement('td');
+        posTd.textContent = `(${t.position.x}, ${t.position.y})`;
+
+        const resultTd = document.createElement('td');
+        resultTd.textContent = t.seen ? 'Seen' : 'Missed';
+        resultTd.className = t.seen ? 'status-seen' : 'status-missed';
+
+        const timeTd = document.createElement('td');
+        timeTd.textContent = t.seen ? `${t.responseTimeMs} ms` : '-';
+
+        row.appendChild(indexTd);
+        row.appendChild(brightnessTd);
+        row.appendChild(posTd);
+        row.appendChild(resultTd);
+        row.appendChild(timeTd);
+
+        resultsTableBody.appendChild(row);
+      });
+    }
+
+    // --- BUTTON EVENT LISTENERS ---
+    startBtn.addEventListener('click', startTest);
+    restartBtn.addEventListener('click', () => {
+      resultsScreen.classList.remove('active');
+      introScreen.classList.add('active');
+    });
+  </script>
+</body>
+</html>
