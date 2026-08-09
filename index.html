@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visual Field & Contrast Sensitivity Tester</title>
+  <title>Visual Field & Contrast Sensitivity Tester (v5.0)</title>
   <style>
     :root {
       --bg-color: #000000;
@@ -318,7 +318,7 @@
       <div class="file-load-box">
         <label for="history-file-input">1. Open Existing Examination File (Optional)</label>
         <input type="file" id="history-file-input" accept=".json">
-        <div id="file-status" class="file-status">Starting a new history file.</div>
+        <div id="file-status" class="file-status">Starting a new history file. Next trial index: #1</div>
       </div>
 
       <!-- Test Parameters -->
@@ -375,7 +375,7 @@
         <table>
           <thead>
             <tr>
-              <th>Trial</th>
+              <th>Trial #</th>
               <th>Brightness</th>
               <th>Position (X, Y)</th>
               <th>Result</th>
@@ -402,7 +402,8 @@
     const MAX_ISI = 2000;
 
     let historyData = {
-      version: "4.0",
+      version: "5.0",
+      totalHistoricalTrials: 0,
       sessions: []
     };
 
@@ -447,11 +448,11 @@
       const docEl = document.documentElement;
       if (docEl.requestFullscreen) {
         docEl.requestFullscreen().catch(() => {});
-      } else if (docEl.mozRequestFullScreen) { /* Firefox */
+      } else if (docEl.mozRequestFullScreen) {
         docEl.mozRequestFullScreen();
-      } else if (docEl.webkitRequestFullscreen) { /* Chrome, Safari, Opera */
+      } else if (docEl.webkitRequestFullscreen) {
         docEl.webkitRequestFullscreen();
-      } else if (docEl.msRequestFullscreen) { /* IE/Edge */
+      } else if (docEl.msRequestFullscreen) {
         docEl.msRequestFullscreen();
       }
     }
@@ -479,7 +480,24 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // --- FILE IMPORT ---
+    // --- HELPER: GET HIGHEST RECORDED TRIAL INDEX ---
+    function getHighestTrialIndex() {
+      let maxIdx = 0;
+      if (historyData.sessions && historyData.sessions.length > 0) {
+        historyData.sessions.forEach(session => {
+          if (session.trials && session.trials.length > 0) {
+            session.trials.forEach(trial => {
+              if (trial.trialIndex > maxIdx) {
+                maxIdx = trial.trialIndex;
+              }
+            });
+          }
+        });
+      }
+      return maxIdx;
+    }
+
+    // --- FILE IMPORT (LOAD EXISTING FILE BEFORE TEST) ---
     historyFileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -490,7 +508,8 @@
           const parsed = JSON.parse(event.target.result);
           if (parsed.sessions && Array.isArray(parsed.sessions)) {
             historyData = parsed;
-            fileStatusEl.textContent = `✓ Loaded "${file.name}" (${historyData.sessions.length} past session(s) found).`;
+            const highestIndex = getHighestTrialIndex();
+            fileStatusEl.textContent = `✓ Loaded "${file.name}" (${historyData.sessions.length} session(s)). Next trial starts at #${highestIndex + 1}.`;
           } else {
             alert('Invalid JSON structure for results file.');
           }
@@ -501,10 +520,13 @@
       reader.readAsText(file);
     });
 
-    // --- PRE-COMPUTATION ---
+    // --- PRE-COMPUTATION WITH DYNAMIC TRIAL RENUMBERING ---
     function createNewSession() {
       const totalFlashes = Math.max(1, parseInt(flashCountInput.value, 10) || 100);
       const maxBrightness = Math.min(100, Math.max(1, parseInt(maxBrightnessInput.value, 10) || 25));
+
+      // Calculate starting offset based on existing file contents
+      const startingTrialOffset = getHighestTrialIndex();
 
       const brightnesses = [];
       for (let i = 0; i < totalFlashes; i++) {
@@ -512,6 +534,7 @@
         brightnesses.push(Math.round(percent));
       }
 
+      // Fisher-Yates Shuffle
       for (let i = brightnesses.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [brightnesses[i], brightnesses[j]] = [brightnesses[j], brightnesses[i]];
@@ -520,7 +543,7 @@
       const trials = [];
       for (let i = 0; i < totalFlashes; i++) {
         trials.push({
-          trialIndex: i + 1,
+          trialIndex: startingTrialOffset + i + 1, // Dynamic offset numbering
           brightness: brightnesses[i],
           position: {
             x: Math.floor(Math.random() * GRID_SIZE),
@@ -645,7 +668,9 @@
       activeSession.summary.totalSeen = seenCount;
       activeSession.summary.scorePercent = Math.round((seenCount / activeSession.config.totalFlashes) * 100);
 
+      // Append into history array
       historyData.sessions.push(activeSession);
+      historyData.totalHistoricalTrials = getHighestTrialIndex();
 
       testScreen.classList.remove('active');
       resultsScreen.classList.add('active');
@@ -660,7 +685,9 @@
         const opt = document.createElement('option');
         opt.value = idx;
         const dateStr = new Date(s.timestamp).toLocaleString();
-        opt.textContent = `Session ${idx + 1}: ${dateStr} (${s.summary.scorePercent}%)`;
+        const startTrial = s.trials[0].trialIndex;
+        const endTrial = s.trials[s.trials.length - 1].trialIndex;
+        opt.textContent = `Session ${idx + 1}: ${dateStr} (Trials #${startTrial}-${endTrial}, ${s.summary.scorePercent}%)`;
         sessionSelect.appendChild(opt);
       });
 
@@ -674,7 +701,9 @@
 
     function displaySessionResults(session) {
       finalScoreEl.textContent = `${session.summary.scorePercent}%`;
-      scoreTextEl.textContent = `${session.summary.totalSeen} out of ${session.config.totalFlashes} flashes detected (Max Brightness: ${session.config.maxBrightness}%)`;
+      const startTrial = session.trials[0].trialIndex;
+      const endTrial = session.trials[session.trials.length - 1].trialIndex;
+      scoreTextEl.textContent = `${session.summary.totalSeen} out of ${session.config.totalFlashes} flashes detected (Trials #${startTrial} to #${endTrial}, Max Brightness: ${session.config.maxBrightness}%)`;
 
       renderDiscreteMap(session);
       renderExtrapolatedMap(session);
@@ -788,7 +817,8 @@
     restartBtn.addEventListener('click', () => {
       resultsScreen.classList.remove('active');
       introScreen.classList.add('active');
-      fileStatusEl.textContent = `Current session history contains ${historyData.sessions.length} session(s).`;
+      const highestIdx = getHighestTrialIndex();
+      fileStatusEl.textContent = `Current history contains ${historyData.sessions.length} session(s). Next trial index: #${highestIdx + 1}.`;
     });
   </script>
 </body>
